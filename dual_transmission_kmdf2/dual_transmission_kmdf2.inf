@@ -1,0 +1,83 @@
+;
+; dual_transmission_kmdf2.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=HIDClass ; TODO: specify appropriate Class
+ClassGuid={745a17a0-74d3-11d0-b6fe-00a0c90f57da} ; TODO: specify appropriate ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=dual_transmission_kmdf2.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+dual_transmission_kmdf2_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+dual_transmission_kmdf2.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%dual_transmission_kmdf2.DeviceDesc%=dual_transmission_kmdf2_Device, Root\dual_transmission_kmdf2 ; TODO: edit hw-id
+
+[dual_transmission_kmdf2_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+dual_transmission_kmdf2.sys
+
+;-------------- Service installation
+[dual_transmission_kmdf2_Device.NT.Services]
+AddService = dual_transmission_kmdf2,%SPSVCINST_ASSOCSERVICE%, dual_transmission_kmdf2_Service_Inst
+
+; -------------- dual_transmission_kmdf2 driver install sections
+[dual_transmission_kmdf2_Service_Inst]
+DisplayName    = %dual_transmission_kmdf2.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\dual_transmission_kmdf2.sys
+
+;
+;--- dual_transmission_kmdf2_Device Coinstaller installation ------
+;
+
+[dual_transmission_kmdf2_Device.NT.CoInstallers]
+AddReg=dual_transmission_kmdf2_Device_CoInstaller_AddReg
+CopyFiles=dual_transmission_kmdf2_Device_CoInstaller_CopyFiles
+
+[dual_transmission_kmdf2_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[dual_transmission_kmdf2_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[dual_transmission_kmdf2_Device.NT.Wdf]
+KmdfService =  dual_transmission_kmdf2, dual_transmission_kmdf2_wdfsect
+[dual_transmission_kmdf2_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="Dual Transmission" ;TODO: Replace with your manufacturer name
+DiskName = "Dual Transmission Installation Disk"
+dual_transmission_kmdf2.DeviceDesc = "Dual Transmission Device"
+dual_transmission_kmdf2.SVCDESC = "Dual Transmission Service"
+
+[HIDVHF_Inst.NT.HW]
+AddReg = HIDVHF_Inst.NT.AddReg
+
+[HIDVHF_Inst.NT.AddReg]
+HKR,,"LowerFilters",0x00010000,"vhf"
